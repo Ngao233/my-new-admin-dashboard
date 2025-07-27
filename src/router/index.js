@@ -1,37 +1,78 @@
-// src/router/index.js
+import { createRouter, createWebHistory } from 'vue-router'
 
-import { createRouter, createWebHistory } from 'vue-router';
 
-// Import TẤT CẢ các component trang của bạn vào đây
-// Đảm bảo đường dẫn đúng đến các file .vue của bạn trong thư mục src/components/
-import DashboardPage from '../components/DashboardPage.vue';
-import CategoryPage from '../components/CategoryPage.vue';
-import ProductPage from '../components/ProductPage.vue';
-import OrderPage from '../components/OrderPage.vue';
-import CustomerPage from '../components/CustomerPage.vue';
-import VoucherPage from '../components/VoucherPage.vue';
-import NewsPage from '../components/NewsPage.vue';
-import FavoriteProductPage from '../components/FavoriteProductPage.vue';
-import LogoutPage from '../components/LogoutPage.vue';
-
-// Định nghĩa các "routes" (đường dẫn) của ứng dụng
 const routes = [
-  { path: '/', name: 'Dashboard', component: DashboardPage },
-  { path: '/categories', name: 'Categories', component: CategoryPage },
-  { path: '/products', name: 'Products', component: ProductPage },
-  { path: '/orders', name: 'Orders', component: OrderPage },
-  { path: '/customers', name: 'Customers', component: CustomerPage },
-  { path: '/vouchers', name: 'Vouchers', component: VoucherPage },
-  { path: '/news', name: 'News', component: NewsPage },
-  { path: '/favorite-products', name: 'FavoriteProducts', component: FavoriteProductPage },
-  { path: '/logout', name: 'Logout', component: LogoutPage }
-];
+  // Frontend routes
+  {
+    path: '/',
+    children: [
+      {
+        path: '',
+        name: 'HomeView',
+        component: () => import('@/views/user/home/HomeView.vue')
+      },
+      {
+        path: 'products',
+        name: 'Products',
+        component: () => import('@/views/user/products/ProductView.vue')
+      },
+      {
+        path: '/cart',
+        component: () => import('@/views/user/cart/CartView.vue')
+      }
+      // {
+      //   path: 'about',
+      //   name: 'About',
+      //   component: () => import('@/views/home/About.vue')
+      // }
+    ]
+  },
 
-// Tạo bộ định tuyến (router instance)
+  // Admin routes
+  {
+    path: '/admin',
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'AdminDashboard',
+        component: () => import('@/views/admin/DashboardView.vue')
+      },
+      {
+        path: 'categories',
+        name: 'AdminCategories',
+        component: () => import('@/views/admin/category/CategoryList.vue')
+      },
+      // ... các route admin khác
+    ]
+  },
+
+  // Auth route
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/user/auth/LoginView.vue')
+  }, 
+  {
+    path: '/logout',
+    name: 'Logout',
+    component: () => import('@/views/user/auth/LogoutView.vue')
+  }
+]
+
 const router = createRouter({
   history: createWebHistory(),
   routes
-});
+})
 
-// Export router để có thể sử dụng nó trong main.js
-export default router;
+// Bảo vệ route admin
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token');
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    next('/login')
+  } else {
+    next()
+  }
+})
+
+export default router

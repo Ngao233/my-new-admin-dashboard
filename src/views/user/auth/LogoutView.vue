@@ -6,9 +6,9 @@
 export default {
   name: 'LogoutView',
   created() {
-    // Xử lý đăng xuất
-    this.$store.dispatch('logout')
-    this.$router.push('/login')
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.replace('/login'); // Chỉ reload 1 lần và chuyển
   }
 }
 </script>
